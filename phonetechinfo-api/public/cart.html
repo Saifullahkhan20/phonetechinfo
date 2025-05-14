@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart - PhoneInfotec</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">PhoneInfotec</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#phones">Phones</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#laptops">Laptops</a>
+                    </li>
+                </ul>
+                <form class="d-flex me-3" id="searchForm">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search products...">
+                    <button class="btn btn-outline-light" type="submit">Search</button>
+                </form>
+                <div class="d-flex">
+                    <a href="cart.html" class="btn btn-outline-light me-2 active">
+                        Cart <span id="cartCount" class="badge bg-primary">0</span>
+                    </a>
+                    <a href="signinPage.html" id="signInLink" class="btn btn-outline-light">Login</a>
+                    <a href="profile.html" id="profileLink" style="display: none;" class="btn btn-outline-light">Profile</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container" style="margin-top: 80px;">
+        <h1 class="mb-4">Your Cart</h1>
+        
+        <div id="cartEmpty" class="alert alert-info" style="display: none;">
+            Your cart is empty. <a href="index.html">Continue shopping</a>
+        </div>
+        
+        <div id="loginPrompt" class="alert alert-warning" style="display: none;">
+            Please <a href="signinPage.html">log in</a> to view your cart.
+        </div>
+
+        <div id="cartContents">
+            <div class="row">
+                <div class="col-md-8">
+                    <div id="cartItems" class="list-group mb-4">
+                        <!-- Cart items will be populated here by JavaScript -->
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Order Summary</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Subtotal:</span>
+                                <span id="subtotal">Rs 0</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3">
+                                <span>Shipping:</span>
+                                <span id="shipping">Rs 0</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between mb-3 fw-bold">
+                                <span>Total:</span>
+                                <span id="total">Rs 0</span>
+                            </div>
+                            <button id="checkoutBtn" class="btn btn-primary w-100">Proceed to Checkout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>PhoneInfotec</h5>
+                    <p>Your one-stop shop for phones and laptops.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html" class="text-light">Home</a></li>
+                        <li><a href="index.html#phones" class="text-light">Phones</a></li>
+                        <li><a href="index.html#laptops" class="text-light">Laptops</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contact Us</h5>
+                    <ul class="list-unstyled">
+                        <li>Email: f223857@cfd.nu.edu.pk</li>
+                        <li>Phone: (555) 123-4567</li>
+                        <li>Address: 123 Tech Street, Faisalabad, Pakistan</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="api.js"></script>
+    <script src="frontend.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check if user is logged in
+            const token = localStorage.getItem('token');
+            const cartEmptyDiv = document.getElementById('cartEmpty');
+            const loginPromptDiv = document.getElementById('loginPrompt');
+            const cartContentsDiv = document.getElementById('cartContents');
+            const cartItemsDiv = document.getElementById('cartItems');
+            const subtotalSpan = document.getElementById('subtotal');
+            const shippingSpan = document.getElementById('shipping');
+            const totalSpan = document.getElementById('total');
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            
+            // Handle search form submission
+            const searchForm = document.getElementById('searchForm');
+            if (searchForm) {
+                searchForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const searchInput = document.getElementById('searchInput');
+                    const query = searchInput.value.trim();
+                    if (query) {
+                        window.location.href = `search-results.html?query=${encodeURIComponent(query)}`;
+                    }
+                });
+            }
+            
+            // Check authentication state
+            checkAuth();
+            
+            if (!token) {
+                // User is not logged in - show login prompt
+                loginPromptDiv.style.display = 'block';
+                cartContentsDiv.style.display = 'none';
+                return;
+            }
+            
+            try {
+                // Fetch cart data from server
+                const response = await window.api.getCart();
+                
+                if (!response.success) {
+                    throw new Error(response.message || 'Failed to fetch cart');
+                }
+                
+                const cartItems = response.data;
+                
+                if (cartItems.length === 0) {
+                    // Cart is empty - show empty cart message
+                    cartEmptyDiv.style.display = 'block';
+                    cartContentsDiv.style.display = 'none';
+                    return;
+                }
+                
+                // Calculate totals
+                let subtotal = 0;
+                const shipping = cartItems.length > 0 ? 500 : 0; // Rs 500 shipping if there are items
+                
+                // Render cart items
+                cartItemsDiv.innerHTML = cartItems.map(item => {
+                    const itemTotal = item.product.price * item.quantity;
+                    subtotal += itemTotal;
+                    
+                    return `
+                        <div class="list-group-item">
+                            <div class="row align-items-center">
+                                <div class="col-md-2">
+                                    <img src="${item.product.mainImage}" class="img-fluid rounded" alt="${item.product.name}">
+                                </div>
+                                <div class="col-md-4">
+                                    <h5>${item.product.name}</h5>
+                                    <p class="text-muted small mb-0">${item.product.brand?.name || ''}</p>
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <div class="input-group input-group-sm">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="updateCartItemQuantity('${item.product._id}', ${Math.max(1, item.quantity - 1)})">-</button>
+                                        <input type="text" class="form-control text-center" value="${item.quantity}" readonly>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="updateCartItemQuantity('${item.product._id}', ${item.quantity + 1})">+</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <p class="mb-0">Rs ${item.product.price.toLocaleString()}</p>
+                                </div>
+                                <div class="col-md-2 text-end">
+                                    <button class="btn btn-outline-danger btn-sm" onclick="removeCartItem('${item.product._id}')">
+                                        <i class="bi bi-trash"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                // Update summary
+                const total = subtotal + shipping;
+                
+                subtotalSpan.textContent = `Rs ${subtotal.toLocaleString()}`;
+                shippingSpan.textContent = `Rs ${shipping.toLocaleString()}`;
+                totalSpan.textContent = `Rs ${total.toLocaleString()}`;
+                
+                // Add event listener to checkout button
+                checkoutBtn.addEventListener('click', function() {
+                    alert('Checkout functionality will be implemented soon!');
+                });
+                
+            } catch (error) {
+                console.error('Error loading cart:', error);
+                cartItemsDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        Failed to load cart data. Please try again later.
+                    </div>
+                `;
+            }
+        });
+        
+        // Function to update cart item quantity
+        async function updateCartItemQuantity(productId, quantity) {
+            try {
+                // Update cart item on server
+                const response = await window.api.updateCartItem(productId, quantity);
+                
+                if (response.success) {
+                    // Reload the page to reflect changes
+                    window.location.reload();
+                } else {
+                    alert('Failed to update cart: ' + (response.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error updating cart item:', error);
+                alert('Failed to update cart. Please try again.');
+            }
+        }
+        
+        // Function to remove cart item
+        async function removeCartItem(productId) {
+            if (!confirm('Are you sure you want to remove this item from your cart?')) return;
+            
+            try {
+                // Remove cart item from server
+                const response = await window.api.removeFromCart(productId);
+                
+                if (response.success) {
+                    // Reload the page to reflect changes
+                    window.location.reload();
+                } else {
+                    alert('Failed to remove item: ' + (response.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error removing cart item:', error);
+                alert('Failed to remove item. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html> 

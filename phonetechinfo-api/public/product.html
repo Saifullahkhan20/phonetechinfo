@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - PhoneInfotec</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .product-image-container {
+            position: relative;
+            width: 100%;
+            padding-top: 100%; /* 1:1 Aspect Ratio */
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .product-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            transition: opacity 0.3s ease;
+        }
+        
+        .product-image.loading {
+            opacity: 0;
+        }
+        
+        .image-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f9fa;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">PhoneInfotec</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#phones">Phones</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html#laptops">Laptops</a>
+                    </li>
+                </ul>
+                <form class="d-flex me-3" id="searchForm">
+                    <input class="form-control me-2" type="search" id="searchInput" placeholder="Search products...">
+                    <button class="btn btn-outline-light" type="submit">Search</button>
+                </form>
+                <div class="d-flex">
+                    <a href="cart.html" class="btn btn-outline-light me-2">
+                        Cart <span id="cartCount" class="badge bg-primary">0</span>
+                    </a>
+                    <a href="signinPage.html" id="signInLink" class="btn btn-outline-light">Login</a>
+                    <a href="profile.html" id="profileLink" style="display: none;" class="btn btn-outline-light">Profile</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container" style="margin-top: 80px;">
+        <div id="product-details">
+            <div class="text-center">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Debug Info (only visible during development) -->
+        <div id="debug-info" class="mt-4 p-3 bg-light border rounded" style="display: none;">
+            <h4>Debug Information</h4>
+            <pre id="debug-output" style="max-height: 200px; overflow-y: auto;"></pre>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>PhoneInfotec</h5>
+                    <p>Your one-stop shop for phones and laptops.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="index.html" class="text-light">Home</a></li>
+                        <li><a href="index.html#phones" class="text-light">Phones</a></li>
+                        <li><a href="index.html#laptops" class="text-light">Laptops</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Contact Us</h5>
+                    <ul class="list-unstyled">
+                        <li>Email: f223857@cfd.nu.edu.pk</li>
+                        <li>Phone: (555) 123-4567</li>
+                        <li>Address: 123 Tech Street, Faisalabad, Pakistan</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="api.js"></script>
+    <script>
+        // Debug function - logs to console and to debug output div
+        function debugLog(message, data) {
+            console.log(message, data);
+            
+            // Also log to debug div if it exists
+            const debugOutput = document.getElementById('debug-output');
+            if (debugOutput) {
+                const timestamp = new Date().toLocaleTimeString();
+                let logString = `[${timestamp}] ${message}`;
+                if (data !== undefined) {
+                    if (typeof data === 'object') {
+                        logString += ': ' + JSON.stringify(data, null, 2);
+                    } else {
+                        logString += ': ' + data;
+                    }
+                }
+                debugOutput.innerHTML += logString + '\n';
+            }
+        }
+
+        // Toggle debug info display
+        function toggleDebug() {
+            const debugInfo = document.getElementById('debug-info');
+            if (debugInfo) {
+                debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+        
+        // Press 'D' key to toggle debug info
+        document.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'd' && e.ctrlKey) {
+                toggleDebug();
+            }
+        });
+
+        // Add to cart function
+        async function addToCart(productId, quantity = 1) {
+            debugLog('Adding to cart', {productId, quantity});
+            try {
+                const response = await fetch(`/api/cart`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ productId, quantity })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Product added to cart successfully!');
+                    // Update cart count
+                    const cartCount = document.getElementById('cartCount');
+                    if (cartCount) {
+                        const currentCount = parseInt(cartCount.textContent) || 0;
+                        cartCount.textContent = currentCount + quantity;
+                    }
+                } else {
+                    alert('Failed to add product to cart: ' + (data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                alert('Failed to add product to cart. Please try again.');
+            }
+        }
+
+        // Display error messages
+        function showError(message) {
+            alert(message);
+        }
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Handle search form submission
+            const searchForm = document.getElementById('searchForm');
+            if (searchForm) {
+                searchForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const searchInput = document.getElementById('searchInput');
+                    const query = searchInput.value.trim();
+                    if (query) {
+                        window.location.href = `search-results.html?query=${encodeURIComponent(query)}`;
+                    }
+                });
+            }
+            
+            // Show debug info in development
+            // Hide by default, but allow toggling with Ctrl+D
+            document.getElementById('debug-info').style.display = 'none';
+            
+            // Log page information
+            const urlParams = new URLSearchParams(window.location.search);
+            debugLog('Current URL', window.location.href);
+            debugLog('URL Parameters', Object.fromEntries(urlParams.entries()));
+            
+            // Get product ID from URL
+            const productId = urlParams.get('id');
+            debugLog('Product ID from URL', productId);
+            
+            const container = document.getElementById('product-details');
+
+            if (!productId) {
+                debugLog('Error', 'No product ID found in URL parameters');
+                container.innerHTML = '<div class="alert alert-danger">Product ID not found.</div>';
+                return;
+            }
+
+            try {
+                debugLog('Fetching product with ID', productId);
+                
+                // Try the direct API endpoint with proper error handling
+                const apiUrl = `/api/products/${productId}`;
+                debugLog('API URL', apiUrl);
+                
+                const response = await fetch(apiUrl);
+                debugLog('Response status', response.status);
+                
+                const data = await response.json();
+                debugLog('API Response', data);
+                
+                if (data.success && data.data) {
+                    const product = data.data;
+                    debugLog('Product data', {
+                        id: product._id,
+                        name: product.name,
+                        price: product.price
+                    });
+                    
+                    // Render product details
+                    container.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <img src="${product.mainImage}" class="img-fluid rounded product-main-img" alt="${product.name}">
+                            </div>
+                            <div class="col-md-6">
+                                <h1 class="mb-3">${product.name}</h1>
+                                <p class="text-primary h2 mb-4">Rs ${product.price.toLocaleString()}</p>
+                                <div class="mb-4">
+                                    <h5>Description</h5>
+                                    <p>${product.description}</p>
+                                </div>
+                                <div class="mb-4">
+                                    <h5>Specifications</h5>
+                                    <ul class="specifications list-unstyled">
+                                        ${Object.entries(product.specs || {}).map(([k, v]) => `<li><strong>${k}:</strong> ${v}</li>`).join('')}
+                                    </ul>
+                                </div>
+                                <div class="mb-4">
+                                    <h5>Brand</h5>
+                                    <p>${product.brand?.name || ''}</p>
+                                </div>
+                                <div class="mb-4">
+                                    <h5>Category</h5>
+                                    <p>${product.category?.name || ''}</p>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button onclick="addToCart('${product._id}', 1)" class="btn btn-primary btn-lg">Add to Cart</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    debugLog('API Error', {success: data.success, message: data.message || data.error});
+                    container.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h4>Product not found</h4>
+                            <p>The requested product could not be found.</p>
+                            <p>Details: ${data.message || data.error || 'Unknown error'}</p>
+                            <a href="index.html" class="btn btn-primary mt-3">Return to Home</a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                debugLog('Error fetching product', {message: error.message, stack: error.stack});
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h4>Error loading product</h4>
+                        <p>There was a problem loading the product details. Please try again later.</p>
+                        <p>Error: ${error.message}</p>
+                        <a href="index.html" class="btn btn-primary mt-3">Return to Home</a>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html> 

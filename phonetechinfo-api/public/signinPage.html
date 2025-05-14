@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhoneInfotec - Sign In / Sign Up</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .auth-container {
+            max-width: 900px;
+            margin: 50px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+            overflow: hidden;
+        }
+        
+        .auth-row {
+            display: flex;
+            min-height: 550px;
+        }
+        
+        .auth-sidebar {
+            background: linear-gradient(to right, #2196F3, #1565C0);
+            color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            width: 40%;
+        }
+        
+        .auth-sidebar h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+        
+        .auth-sidebar p {
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .auth-content {
+            padding: 40px;
+            width: 60%;
+        }
+        
+        .auth-form {
+            display: none;
+        }
+        
+        .auth-form.active {
+            display: block;
+        }
+        
+        .ghost-btn {
+            background-color: transparent;
+            border: 1px solid #FFFFFF;
+            color: #FFFFFF;
+            padding: 10px 30px;
+            border-radius: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .ghost-btn:hover {
+            background-color: #FFFFFF;
+            color: #2196F3;
+        }
+        
+        .btn {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0b7dda;
+        }
+        
+        .btn-outline-secondary {
+            background-color: transparent;
+            color: #2196F3;
+            border: 1px solid #2196F3;
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .btn-link {
+            background: none;
+            border: none;
+            padding: 0;
+            color: #2196F3;
+            text-decoration: underline;
+        }
+        
+        .success-message, .error-message {
+            display: none;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @media (max-width: 768px) {
+            .auth-row {
+                flex-direction: column;
+            }
+            
+            .auth-sidebar, .auth-content {
+                width: 100%;
+            }
+            
+            .auth-sidebar {
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="topnav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="index.html">Laptops</a>
+        <a href="index.html">Phones</a>
+        <a href="contact.html">Contact</a>
+        <a href="profile.html" id="profileLink" style="display: none;">Profile</a>
+        <a class="active" href="signinPage.html" id="signInLink">Sign In</a>
+        <div class="search-container">
+            <form action="search-results.html" method="get">
+                <input type="text" placeholder="Search.." name="query">
+                <button type="submit"><i class="fa fa-search"></i>Search</button>
+            </form>
+        </div>
+    </div>
+    <div class="head">Phone Info Tech</div>
+
+    <!-- Auth Container -->
+    <div class="auth-container">
+        <div class="auth-row">
+            <div class="auth-sidebar" id="authSidebar">
+                <h1 id="sidebarTitle">Welcome Back!</h1>
+                <p id="sidebarText">To keep connected with us please login with your personal info</p>
+                <button class="ghost-btn" id="toggleFormBtn">Sign Up</button>
+            </div>
+            <div class="auth-content">
+                <!-- Sign In Form -->
+                <div class="auth-form active" id="signInForm">
+                    <h2 class="mb-4">Sign In</h2>
+                    <div id="signInSuccess" class="success-message">Successfully signed in!</div>
+                    <div id="signInError" class="error-message">Invalid email or password. Please try again.</div>
+                    
+                    <form id="loginForm" novalidate>
+                        <div class="mb-3">
+                            <label for="loginEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="loginEmail" required>
+                            <div class="invalid-feedback">Please enter a valid email address.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="loginPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="loginPassword" required>
+                            <div class="invalid-feedback">Please enter your password.</div>
+                        </div>
+                        
+                        <div class="mb-3 text-end">
+                            <button type="button" id="forgotPasswordBtn" class="btn btn-link p-0">Forgot your password?</button>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">Sign In</button>
+                    </form>
+                </div>
+                
+                <!-- Sign Up Form -->
+                <div class="auth-form" id="signUpForm">
+                    <h2 class="mb-4">Create Account</h2>
+                    <div id="signUpSuccess" class="success-message">Account created successfully!</div>
+                    <div id="signUpError" class="error-message">Error creating account. Please try again.</div>
+                    
+                    <form id="registerForm" novalidate>
+                        <div class="mb-3">
+                            <label for="registerName" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="registerName" required>
+                            <div class="invalid-feedback">Please enter your name.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="registerEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="registerEmail" required>
+                            <div class="invalid-feedback">Please enter a valid email with domain .com, .pk, .edu, .yahoo, or .net.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="registerPassword" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="registerPassword" required minlength="6">
+                            <div class="invalid-feedback">Password must be at least 6 characters long.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="registerConfirmPassword" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="registerConfirmPassword" required>
+                            <div class="invalid-feedback">Passwords do not match.</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="termsCheck" required>
+                            <label class="form-check-label" for="termsCheck">
+                                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                            </label>
+                            <div class="invalid-feedback">You must agree to the terms and conditions.</div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+                    </form>
+                </div>
+                
+                <!-- Forgot Password Form -->
+                <div class="auth-form" id="forgotPasswordForm">
+                    <h2 class="mb-4">Reset Password</h2>
+                    <div id="forgotSuccess" class="success-message">Password reset link sent to your email!</div>
+                    <div id="forgotError" class="error-message">Error sending reset link. Please try again.</div>
+                    
+                    <p class="text-muted mb-4">Enter your email address and we'll send you a link to reset your password.</p>
+                    
+                    <form id="resetForm" novalidate>
+                        <div class="mb-3">
+                            <label for="resetEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="resetEmail" required>
+                            <div class="invalid-feedback">Please enter a valid email address.</div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-3">Send Reset Link</button>
+                        <button type="button" id="backToSignInBtn" class="btn btn-outline-secondary w-100">Back to Sign In</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <h5>Contact Us</h5>
+                    <ul class="list-unstyled">
+                        <li>Email: f223857@cfd.nu.edu.pk</li>
+                        <li>Phone: (555) 123-4567</li>
+                        <li>Address: 123 Tech Street, Faisalabad, Pakistan</li>
+                    </ul>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <h5>Follow Us</h5>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-white text-decoration-none">Facebook</a>
+                        <a href="#" class="text-white text-decoration-none">Twitter</a>
+                        <a href="#" class="text-white text-decoration-none">Instagram</a>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4">
+                <p>&copy; 2023 PhoneInfotec. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get form elements
+            const signInForm = document.getElementById('signInForm');
+            const signUpForm = document.getElementById('signUpForm');
+            const forgotPasswordForm = document.getElementById('forgotPasswordForm');
+            
+            // Get sidebar elements
+            const sidebarTitle = document.getElementById('sidebarTitle');
+            const sidebarText = document.getElementById('sidebarText');
+            const toggleFormBtn = document.getElementById('toggleFormBtn');
+            
+            // Get form toggle buttons
+            const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+            const backToSignInBtn = document.getElementById('backToSignInBtn');
+            
+            // Get form submission elements
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const resetForm = document.getElementById('resetForm');
+            
+            // Success and error messages
+            const signInSuccess = document.getElementById('signInSuccess');
+            const signInError = document.getElementById('signInError');
+            const signUpSuccess = document.getElementById('signUpSuccess');
+            const signUpError = document.getElementById('signUpError');
+            const forgotSuccess = document.getElementById('forgotSuccess');
+            const forgotError = document.getElementById('forgotError');
+            
+            // Toggle between Sign In and Sign Up forms
+            toggleFormBtn.addEventListener('click', function() {
+                if (signInForm.classList.contains('active')) {
+                    // Switch to Sign Up
+                    signInForm.classList.remove('active');
+                    signUpForm.classList.add('active');
+                    forgotPasswordForm.classList.remove('active');
+                    
+                    // Update sidebar
+                    sidebarTitle.textContent = 'Welcome!';
+                    sidebarText.textContent = 'Already have an account? Sign in to continue your journey with us';
+                    toggleFormBtn.textContent = 'Sign In';
+                } else {
+                    // Switch to Sign In
+                    signInForm.classList.add('active');
+                    signUpForm.classList.remove('active');
+                    forgotPasswordForm.classList.remove('active');
+                    
+                    // Update sidebar
+                    sidebarTitle.textContent = 'Welcome Back!';
+                    sidebarText.textContent = 'To keep connected with us please login with your personal info';
+                    toggleFormBtn.textContent = 'Sign Up';
+                }
+                
+                // Reset forms and messages
+                resetMessages();
+                resetForms();
+            });
+            
+            // Show Forgot Password form
+            forgotPasswordBtn.addEventListener('click', function() {
+                signInForm.classList.remove('active');
+                signUpForm.classList.remove('active');
+                forgotPasswordForm.classList.add('active');
+                
+                // Update sidebar
+                sidebarTitle.textContent = 'Password Recovery';
+                sidebarText.textContent = 'Enter your email to receive a password reset link';
+                toggleFormBtn.style.display = 'none';
+                
+                // Reset messages
+                resetMessages();
+            });
+            
+            // Back to Sign In from Forgot Password
+            backToSignInBtn.addEventListener('click', function() {
+                signInForm.classList.add('active');
+                signUpForm.classList.remove('active');
+                forgotPasswordForm.classList.remove('active');
+                
+                // Update sidebar
+                sidebarTitle.textContent = 'Welcome Back!';
+                sidebarText.textContent = 'To keep connected with us please login with your personal info';
+                toggleFormBtn.style.display = 'block';
+                toggleFormBtn.textContent = 'Sign Up';
+                
+                // Reset messages
+                resetMessages();
+            });
+            
+            // Email validation function
+            function validateEmail(email) {
+                // Check if email ends with allowed domains
+                const allowedDomains = ['.com', '.pk', '.edu', '.yahoo', '.net'];
+                let isValid = false;
+                
+                for (const domain of allowedDomains) {
+                    if (email.endsWith(domain)) {
+                        isValid = true;
+                        break;
+                    }
+                }
+                
+                // Basic email format validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return isValid && emailRegex.test(email);
+            }
+            
+            // Login Form Submission
+            loginForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                resetMessages();
+                
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                // Validate email
+                if (!validateEmail(email)) {
+                    document.getElementById('loginEmail').setCustomValidity('Please enter a valid email with domain .com, .pk, .edu, .yahoo, or .net');
+                } else {
+                    document.getElementById('loginEmail').setCustomValidity('');
+                }
+                
+                if (!this.checkValidity()) {
+                    this.classList.add('was-validated');
+                    return;
+                }
+                
+                try {
+                    const response = await login(email, password);
+                    if (response.success) {
+                        signInSuccess.style.display = 'block';
+                        // Store the token
+                        localStorage.setItem('token', response.token);
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1500);
+                    } else {
+                        signInError.textContent = response.message || 'Invalid credentials';
+                        signInError.style.display = 'block';
+                    }
+                } catch (error) {
+                    signInError.textContent = 'An error occurred. Please try again.';
+                    signInError.style.display = 'block';
+                    console.error('Login error:', error);
+                }
+            });
+            
+            // Register Form Submission
+            registerForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                resetMessages();
+                
+                const name = document.getElementById('registerName').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
+                const confirmPassword = document.getElementById('registerConfirmPassword').value;
+                const termsCheck = document.getElementById('termsCheck').checked;
+                
+                // Validate email
+                if (!validateEmail(email)) {
+                    document.getElementById('registerEmail').setCustomValidity('Please enter a valid email with domain .com, .pk, .edu, .yahoo, or .net');
+                } else {
+                    document.getElementById('registerEmail').setCustomValidity('');
+                }
+                
+                // Check if passwords match
+                if (password !== confirmPassword) {
+                    document.getElementById('registerConfirmPassword').setCustomValidity('Passwords do not match');
+                } else {
+                    document.getElementById('registerConfirmPassword').setCustomValidity('');
+                }
+                
+                // Check if terms are accepted
+                if (!termsCheck) {
+                    document.getElementById('termsCheck').setCustomValidity('You must accept the terms and conditions');
+                } else {
+                    document.getElementById('termsCheck').setCustomValidity('');
+                }
+                
+                if (!this.checkValidity()) {
+                    this.classList.add('was-validated');
+                    return;
+                }
+                
+                try {
+                    const userData = {
+                        name,
+                        email,
+                        password
+                    };
+                    
+                    const response = await register(userData);
+                    if (response.success) {
+                        signUpSuccess.style.display = 'block';
+                        // Store the token
+                        localStorage.setItem('token', response.token);
+                        
+                        setTimeout(() => {
+                            // Switch to Sign In form after successful registration
+                            signInForm.classList.add('active');
+                            signUpForm.classList.remove('active');
+                            
+                            // Update sidebar
+                            sidebarTitle.textContent = 'Welcome Back!';
+                            sidebarText.textContent = 'To keep connected with us please login with your personal info';
+                            toggleFormBtn.textContent = 'Sign Up';
+                            
+                            resetMessages();
+                            resetForms();
+                            
+                            // Redirect to home page
+                            window.location.href = 'index.html';
+                        }, 1500);
+                    } else {
+                        signUpError.textContent = response.message || 'Error creating account';
+                        signUpError.style.display = 'block';
+                    }
+                } catch (error) {
+                    signUpError.textContent = 'An error occurred. Please try again.';
+                    signUpError.style.display = 'block';
+                    console.error('Registration error:', error);
+                }
+            });
+            
+            // Reset Form Submission
+            resetForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                resetMessages();
+                
+                const email = document.getElementById('resetEmail').value;
+                
+                // Validate email
+                if (!validateEmail(email)) {
+                    document.getElementById('resetEmail').setCustomValidity('Please enter a valid email with domain .com, .pk, .edu, .yahoo, or .net');
+                } else {
+                    document.getElementById('resetEmail').setCustomValidity('');
+                }
+                
+                if (!this.checkValidity()) {
+                    this.classList.add('was-validated');
+                    return;
+                }
+                
+                // Simulate password reset email (replace with actual reset logic)
+                forgotSuccess.style.display = 'block';
+                
+                setTimeout(() => {
+                    // Switch back to Sign In form after sending reset link
+                    signInForm.classList.add('active');
+                    forgotPasswordForm.classList.remove('active');
+                    
+                    // Update sidebar
+                    sidebarTitle.textContent = 'Welcome Back!';
+                    sidebarText.textContent = 'To keep connected with us please login with your personal info';
+                    toggleFormBtn.style.display = 'block';
+                    toggleFormBtn.textContent = 'Sign Up';
+                    
+                    resetMessages();
+                    resetForms();
+                }, 1500);
+            });
+            
+            // Real-time validation for password confirmation
+            document.getElementById('registerConfirmPassword').addEventListener('input', function() {
+                const password = document.getElementById('registerPassword').value;
+                if (this.value !== password) {
+                    this.setCustomValidity('Passwords do not match');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            document.getElementById('registerPassword').addEventListener('input', function() {
+                const confirmPassword = document.getElementById('registerConfirmPassword');
+                if (confirmPassword.value !== '') {
+                    if (confirmPassword.value !== this.value) {
+                        confirmPassword.setCustomValidity('Passwords do not match');
+                    } else {
+                        confirmPassword.setCustomValidity('');
+                    }
+                }
+            });
+            
+            // Real-time validation for email fields
+            document.getElementById('loginEmail').addEventListener('input', function() {
+                if (!validateEmail(this.value) && this.value !== '') {
+                    this.setCustomValidity('Please enter a valid email with domain .com, .pk, .edu, .yahoo, or .net');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            document.getElementById('registerEmail').addEventListener('input', function() {
+                if (!validateEmail(this.value) && this.value !== '') {
+                    this.setCustomValidity('Please enter a valid email with domain .com, .pk, .edu, .yahoo, or .net');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            document.getElementById('resetEmail').addEventListener('input', function() {
+                if (!validateEmail(this.value) && this.value !== '') {
+                    this.setCustomValidity('Please enter a valid email with domain .com, .pk, .edu, .yahoo, or .net');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+            
+            // Reset all success and error messages
+            function resetMessages() {
+                signInSuccess.style.display = 'none';
+                signInError.style.display = 'none';
+                signUpSuccess.style.display = 'none';
+                signUpError.style.display = 'none';
+                forgotSuccess.style.display = 'none';
+                forgotError.style.display = 'none';
+                
+                loginForm.classList.remove('was-validated');
+                registerForm.classList.remove('was-validated');
+                resetForm.classList.remove('was-validated');
+                
+                // Reset custom validity
+                document.getElementById('loginEmail').setCustomValidity('');
+                document.getElementById('registerEmail').setCustomValidity('');
+                document.getElementById('registerConfirmPassword').setCustomValidity('');
+                document.getElementById('resetEmail').setCustomValidity('');
+                document.getElementById('termsCheck').setCustomValidity('');
+            }
+            
+            // Reset all form fields
+            function resetForms() {
+                loginForm.reset();
+                registerForm.reset();
+                resetForm.reset();
+            }
+        });
+    </script>
+    <script src="api.js"></script>
+    <script src="auth.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
